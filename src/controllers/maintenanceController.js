@@ -3,9 +3,28 @@ import Maintenance from "../models/Maintenance.js";
 //  Crear mantenimiento
 export const createMaintenance = async (req, res) => {
   try {
-    const { computer, technician, category, nature, description, findings, status} = req.body;
+    const { computer, category, nature, description, findings, status} = req.body;
 
-    const maintenance = new Maintenance({ computer, technician, category, nature, description, findings, status });
+    const foundComputer = await Computer.findById(computer);
+    if (!foundComputer) {
+      return res.status(404).json({ message: "Computer not found" });
+    }
+
+    // Admin puede todo
+    if (req.user.role !== "admin") {
+
+      const user = await User.findById(req.user.id);
+
+      const isAssigned = user.labs.includes(foundComputer.lab);
+
+      if (!isAssigned) {
+        return res.status(403).json({
+          message: "You can only create maintenance for computers in your assigned labs"
+        });
+      }
+    }
+
+    const maintenance = new Maintenance({ computer, technician: req.user.id, category, nature, description, findings, status });
 
     await maintenance.save();
     res.status(201).json(maintenance);

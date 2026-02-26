@@ -25,7 +25,10 @@ export const createUser = async (req, res) => {
     });
 
     await user.save();
-    res.status(201).json(user);
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    res.status(201).json(userWithoutPassword);
 
   } catch (error) {
     res.status(500).json({ message: error.message });

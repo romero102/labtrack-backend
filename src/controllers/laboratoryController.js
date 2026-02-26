@@ -14,7 +14,7 @@ export const createLaboratory = async (req, res) => {
   }
 };
 
-// 🔹 Obtener todos los laboratorios
+//  Obtener todos los laboratorios
 export const getAllLaboratories = async (req, res) => {
   try {
     const labs = await Laboratory.find();
@@ -24,7 +24,7 @@ export const getAllLaboratories = async (req, res) => {
   }
 };
 
-// 🔹 Obtener un laboratorio por ID
+//  Obtener un laboratorio por ID
 export const getLaboratoryById = async (req, res) => {
   try {
     const lab = await Laboratory.findById(req.params.id);
@@ -35,7 +35,7 @@ export const getLaboratoryById = async (req, res) => {
   }
 };
 
-// 🔹 Actualizar un laboratorio
+//  Actualizar un laboratorio
 export const updateLaboratory = async (req, res) => {
   try {
     const lab = await Laboratory.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -46,7 +46,7 @@ export const updateLaboratory = async (req, res) => {
   }
 };
 
-// 🔹 Eliminar un laboratorio
+//  Eliminar un laboratorio
 export const deleteLaboratory = async (req, res) => {
   try {
     const lab = await Laboratory.findByIdAndDelete(req.params.id);

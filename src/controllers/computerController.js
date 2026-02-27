@@ -1,22 +1,46 @@
 import Computer from "../models/Computer.js";
+import QRCode from "qrcode";
+import cloudinary from "../config/cloudinary.js";
 
 //  Crear una computadora
 export const createComputer = async (req, res) => {
   try {
-    const { lab, codeQR, processor, ram, storage, graphics } = req.body;
+    const { lab, processor, ram, storage, graphics } = req.body;
 
-    // Verificar si el QR ya existe
-    const existing = await Computer.findOne({ codeQR });
-    if (existing) {
-      return res.status(400).json({ message: "Computer with this QR already exists" });
-    }
+    //  Crear instancia SIN guardar todavía
+    const computer = new Computer({
+      lab,
+      processor,
+      ram,
+      storage,
+      graphics
+    });
 
-    const computer = new Computer({ lab, codeQR, processor, ram, storage, graphics });
+    //  Generar la URL que contendrá el QR
+    const qrData = `${process.env.BASE_URL}/api/computers/${computer._id}`;
+
+    //  Generar imagen QR en base64
+    const qrImageBase64 = await QRCode.toDataURL(qrData);
+
+    //  Subir imagen a Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(qrImageBase64, {
+      folder: "labtrack_qr_codes"
+    });
+
+    //  Guardar URL en el modelo
+    computer.qrImage = uploadResponse.secure_url;
+
+    //  Ahora sí guardamos en MongoDB
     await computer.save();
 
     res.status(201).json(computer);
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({
+      message: "Error creating computer",
+      error: error.message
+    });
   }
 };
 

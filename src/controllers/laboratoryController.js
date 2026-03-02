@@ -38,7 +38,7 @@ export const getLaboratoryById = async (req, res) => {
 //  Actualizar un laboratorio
 export const updateLaboratory = async (req, res) => {
   try {
-    const lab = await Laboratory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const lab = await Laboratory.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!lab) return res.status(404).json({ message: "Laboratory not found" });
     res.json(lab);
   } catch (error) {

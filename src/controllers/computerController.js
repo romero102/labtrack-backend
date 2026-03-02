@@ -17,7 +17,7 @@ export const createComputer = async (req, res) => {
     });
 
     //  Generar la URL que contendrá el QR
-    const qrData = `${process.env.BASE_URL}/api/computers/${computer._id}`;
+    const qrData = `${process.env.FRONTEND_URL}/computers/${computer._id}`;
 
     //  Generar imagen QR en base64
     const qrImageBase64 = await QRCode.toDataURL(qrData);
@@ -29,6 +29,7 @@ export const createComputer = async (req, res) => {
 
     //  Guardar URL en el modelo
     computer.qrImage = uploadResponse.secure_url;
+    computer.qrPublicId = uploadResponse.public_id;
 
     //  Ahora sí guardamos en MongoDB
     await computer.save();
@@ -68,7 +69,7 @@ export const getComputerById = async (req, res) => {
 //  Actualizar una computadora
 export const updateComputer = async (req, res) => {
   try {
-    const computer = await Computer.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const computer = await Computer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!computer) return res.status(404).json({ message: "Computer not found" });
     res.json(computer);
   } catch (error) {
@@ -79,10 +80,29 @@ export const updateComputer = async (req, res) => {
 //  Eliminar una computadora
 export const deleteComputer = async (req, res) => {
   try {
-    const computer = await Computer.findByIdAndDelete(req.params.id);
-    if (!computer) return res.status(404).json({ message: "Computer not found" });
-    res.json({ message: "Computer deleted successfully" });
+    const { id } = req.params;
+
+    const computer = await Computer.findById(id);
+
+    if (!computer) {
+      return res.status(404).json({ message: "Computer not found" });
+    }
+
+    //  Eliminar QR de Cloudinary si existe
+    if (computer.qrPublicId) {
+      await cloudinary.uploader.destroy(computer.qrPublicId);
+    }
+
+    //  Eliminar computadora de MongoDB
+    await computer.deleteOne();
+
+    res.status(200).json({ message: "Computer deleted successfully" });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({
+      message: "Error deleting computer",
+      error: error.message
+    });
   }
 };

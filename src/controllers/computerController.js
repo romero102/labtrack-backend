@@ -1,81 +1,96 @@
 import Computer from "../models/Computer.js";
 import QRCode from "qrcode";
 import cloudinary from "../config/cloudinary.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 //  Crear una computadora
-export const createComputer = async (req, res) => {
+export const createComputer = asyncHandler(async (req, res) => {
+  const { lab, processor, ram, storage, graphics } = req.body;
+
+  // Crear instancia sin guardar
+  const computer = new Computer({
+    lab,
+    processor,
+    ram,
+    storage,
+    graphics
+  });
+
+  const qrData = `${process.env.FRONTEND_URL}/computers/${computer._id}`;
+
+  let uploadResponse; // la declaramos fuera para poder usarla en catch
+
   try {
-    const { lab, processor, ram, storage, graphics } = req.body;
-
-    //  Crear instancia SIN guardar todavía
-    const computer = new Computer({
-      lab,
-      processor,
-      ram,
-      storage,
-      graphics
-    });
-
-    //  Generar la URL que contendrá el QR
-    const qrData = `${process.env.FRONTEND_URL}/computers/${computer._id}`;
-
-    //  Generar imagen QR en base64
+    //  Generar QR
     const qrImageBase64 = await QRCode.toDataURL(qrData);
 
-    //  Subir imagen a Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(qrImageBase64, {
+    //  Subir a Cloudinary
+    uploadResponse = await cloudinary.uploader.upload(qrImageBase64, {
       folder: "labtrack_qr_codes"
     });
 
-    //  Guardar URL en el modelo
+    //  Guardar datos en el modelo
     computer.qrImage = uploadResponse.secure_url;
     computer.qrPublicId = uploadResponse.public_id;
 
-    //  Ahora sí guardamos en MongoDB
+    //  Guardar en Mongo
     await computer.save();
 
-    res.status(201).json(computer);
+    res.status(201).json({
+      success: true,
+      data: computer
+    });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Error creating computer",
-      error: error.message
-    });
+
+    //  Si ya se subió la imagen pero Mongo falló
+    if (uploadResponse?.public_id) {
+      await cloudinary.uploader.destroy(uploadResponse.public_id);
+    }
+
+    throw error; // lo enviamos a asyncHandler
   }
-};
+});
 
 //  Obtener todas las computadoras
 export const getAllComputers = async (req, res) => {
-  try {
-    const computers = await Computer.find().populate("lab");
-    res.json(computers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const computers = await Computer.find().populate("lab");
+
+  res.status(200).json({
+    success: true,
+    data: computers
+  });
 };
 
 //  Obtener una computadora por ID
-export const getComputerById = async (req, res) => {
-  try {
+export const getComputerById = asyncHandler(async (req, res) => {
     const computer = await Computer.findById(req.params.id).populate("lab");
-    if (!computer) return res.status(404).json({ message: "Computer not found" });
-    res.json(computer);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+    if (!computer){
+      const error = new Error("Computer not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    res.status(200).json({
+    success: true,
+    data: computer
+    });
+});
 
 //  Actualizar una computadora
-export const updateComputer = async (req, res) => {
-  try {
-    const computer = await Computer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!computer) return res.status(404).json({ message: "Computer not found" });
-    res.json(computer);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+export const updateComputer = asyncHandler(async (req, res) => {
+  const {lab, processor, ram, storage, graphics} = req.body;
+  const updates = { lab, processor, ram, storage, graphics };
+  const computer = await Computer.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+  if (!computer){
+    const error = new Error("Computer not found");
+      error.statusCode = 404;
+      throw error;
+  } 
+  res.status(200).json({
+    success: true,
+    data: computer
+  });
+});
 
 //  Eliminar una computadora
 export const deleteComputer = async (req, res) => {

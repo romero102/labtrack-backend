@@ -13,16 +13,19 @@ export const updateComputerValidator = [
 
   body("processor")
     .optional()
+    .isString()
     .withMessage("Processor is required"),
 
   body("ram")
     .optional()
+    .isString()
     .withMessage("RAM is required")
     .matches(/^\d+GB$/)
     .withMessage("RAM must be in format like 8GB, 16GB"),
 
   body("storage")
     .optional()
+    .isString()
     .withMessage("Storage is required")
     .matches(/^\d+GB$/)
     .withMessage("Storage must be in format like 256GB, 512GB"),

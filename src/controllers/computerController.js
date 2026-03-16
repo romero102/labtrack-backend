@@ -54,7 +54,7 @@ export const createComputer = asyncHandler(async (req, res) => {
 
 //  Obtener todas las computadoras
 export const getAllComputers = asyncHandler( async (req, res) => {
-  const computers = await Computer.find().populate("lab");
+  const computers = await Computer.find().populate("lab").lean();
 
   res.status(200).json({
     success: true,

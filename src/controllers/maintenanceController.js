@@ -1,4 +1,5 @@
 import Maintenance from "../models/Maintenance.js";
+import Computer from "../models/Computer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 //  Crear mantenimiento

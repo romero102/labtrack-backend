@@ -6,6 +6,7 @@ import laboratoryRoutes from "./src/routes/laboratoryRoutes.js";
 import computerRoutes from "./src/routes/computerRoutes.js";
 import userRoutes from "./src/routes/userRoutes.js";
 import maintenanceRoutes from "./src/routes/maintenanceRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
 import { errorHandler } from "./src/middleware/errorMiddleware.js";
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use("/api/labs", laboratoryRoutes);
 app.use("/api/computers", computerRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/maintenances", maintenanceRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "LabTrack API running" });

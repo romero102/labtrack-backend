@@ -50,7 +50,7 @@ export const getAllMaintenances = asyncHandler( async (req, res) => {
 
     const maintenances = await Maintenance.find()
       .populate("computer", "name serialNumber")
-      .populate("technician", "name email");
+      .populate("technician", "name email isActive");
 
     res.status(200).json({
       success: true,
@@ -63,7 +63,7 @@ export const getMaintenanceById = asyncHandler( async (req, res) => {
   
     const maintenance = await Maintenance.findById(req.params.id)
       .populate("computer", "name serialNumber")
-      .populate("technician", "name email");
+      .populate("technician", "name email isActive");
 
     if (!maintenance){
       const error = new Error("Maintenance not found");

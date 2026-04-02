@@ -8,18 +8,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 // Create firts user
 
 export const setupAdmin = asyncHandler(async (req, res) => {
-
-  const installToken = req.headers["x-install-token"];
-
-  if (installToken !== process.env.INSTALL_TOKEN) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized installation attempt"
-    });
-  }
-
   const users = await User.countDocuments();
 
+  // 🔒 Solo permitir si NO hay usuarios
   if (users > 0) {
     return res.status(403).json({
       success: false,
@@ -54,7 +45,6 @@ export const setupAdmin = asyncHandler(async (req, res) => {
     data: adminObj,
     message: "Admin created successfully"
   });
-
 });
 
 //  login user

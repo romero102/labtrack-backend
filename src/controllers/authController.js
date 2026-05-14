@@ -10,7 +10,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const setupAdmin = asyncHandler(async (req, res) => {
   const users = await User.countDocuments();
 
-  // 🔒 Solo permitir si NO hay usuarios
+  // Solo permitir si NO hay usuarios
   if (users > 0) {
     return res.status(403).json({
       success: false,
@@ -84,16 +84,26 @@ export const loginUser = asyncHandler( async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+//  save token in cookie
+    res.cookie("token", token);
 
     res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        role: user.role
-      }
+      id: user._id,
+      name: user.name,
+      role: user.role
     });
 
+});
+
+// logout 
+
+export const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV,
+    sameSite: "strict",
+  });
+  res.json({ message: "Logout exitoso" });
 });
 
 //  forgot password

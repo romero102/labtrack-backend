@@ -8,6 +8,8 @@ import userRoutes from "./src/routes/userRoutes.js";
 import maintenanceRoutes from "./src/routes/maintenanceRoutes.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import { errorHandler } from "./src/middleware/errorMiddleware.js";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
 dotenv.config();
 
@@ -15,8 +17,15 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(morgan("dev"))
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL
+}));
+
 app.use(express.json());
+
+app.use(cookieParser())
 
 app.use("/api/labs", laboratoryRoutes);
 app.use("/api/computers", computerRoutes);

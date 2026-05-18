@@ -1,5 +1,5 @@
 import express from "express";
-import { getSetupStatus, setupAdmin, loginUser, forgotPassword, resetPassword, logout } from "../controllers/authController.js";
+import { getSetupStatus, setupAdmin, loginUser, forgotPassword, resetPassword, logout, verifyToken } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -9,5 +9,6 @@ router.get("/setup-status", getSetupStatus);
 router.post("/setup-admin", setupAdmin);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
+router.get("/verify", verifyToken)
 
 export default router;

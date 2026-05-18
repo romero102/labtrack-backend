@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import dotenv from "dotenv";
+import { error } from "console";
 
 // Create firts user
 
@@ -14,7 +16,7 @@ export const setupAdmin = asyncHandler(async (req, res) => {
   if (users > 0) {
     return res.status(403).json({
       success: false,
-      message: "System already initialized"
+      message: "System already initialized",
     });
   }
 
@@ -23,7 +25,7 @@ export const setupAdmin = asyncHandler(async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({
       success: false,
-      message: "Name, email and password are required"
+      message: "Name, email and password are required",
     });
   }
 
@@ -34,7 +36,7 @@ export const setupAdmin = asyncHandler(async (req, res) => {
     name,
     email,
     password: hashedPassword,
-    role: "admin"
+    role: "admin",
   });
 
   const adminObj = admin.toObject();
@@ -43,59 +45,61 @@ export const setupAdmin = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     data: adminObj,
-    message: "Admin created successfully"
+    message: "Admin created successfully",
   });
 });
 
 //  login user
 
-export const loginUser = asyncHandler( async (req, res) => {
-  
+export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-    //  search user
-    const user = await User.findOne({ email });
-    if (!user){
-      const error = new Error("Invalid credentials");
-      error.statusCode = 401;
-      throw error;
-    }
+  //  search user
+  const user = await User.findOne({ email });
+  if (!user) {
+    const error = new Error("Invalid credentials");
+    error.statusCode = 401;
+    throw error;
+  }
 
-    if (!user.isActive) {
-      const error = new Error("Usuario desactivado");
-      error.statusCode = 403;
-      throw error;
-    }
-    
-    //  Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      const error = new Error("Invalid credentials");
-      error.statusCode = 400;
-      throw error;
-    }
+  if (!user.isActive) {
+    const error = new Error("Usuario desactivado");
+    error.statusCode = 403;
+    throw error;
+  }
 
-    //  Generate token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-//  save token in cookie
-    res.cookie("token", token);
+  //  Compare password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    const error = new Error("Invalid credentials");
+    error.statusCode = 400;
+    throw error;
+  }
 
-    res.json({
+  //  Generate token
+  const token = jwt.sign(
+    {
       id: user._id,
-      name: user.name,
-      role: user.role
-    });
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" },
+  );
+  //  save token in cookie
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
 
+  res.json({
+    id: user._id,
+    name: user.name,
+    role: user.role,
+  });
 });
 
-// logout 
+// logout
 
 export const logout = asyncHandler(async (req, res) => {
   res.clearCookie("token", {
@@ -109,7 +113,6 @@ export const logout = asyncHandler(async (req, res) => {
 //  forgot password
 
 export const forgotPassword = asyncHandler(async (req, res) => {
-
   const { email } = req.body;
 
   if (!email) {
@@ -146,51 +149,46 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
+      pass: process.env.EMAIL_PASS,
+    },
   });
 
   await transporter.sendMail({
     to: user.email,
     subject: "Password Reset",
-    text: `Reset your password here: ${resetUrl}`
+    text: `Reset your password here: ${resetUrl}`,
   });
 
   res.status(200).json({
     success: true,
-    message: "Password reset email sent"
+    message: "Password reset email sent",
   });
-
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {
-
   const { token } = req.params;
   const { password } = req.body;
 
   if (!password) {
     return res.status(400).json({
       success: false,
-      message: "Password is required"
+      message: "Password is required",
     });
   }
 
   // Hashear el token recibido
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   // Buscar usuario con token válido y no expirado
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
-    resetPasswordExpire: { $gt: Date.now() }
+    resetPasswordExpire: { $gt: Date.now() },
   });
 
   if (!user) {
     return res.status(400).json({
       success: false,
-      message: "Invalid or expired token"
+      message: "Invalid or expired token",
     });
   }
 
@@ -206,9 +204,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Password reset successfully"
+    message: "Password reset successfully",
   });
-
 });
 
 //  Status
@@ -218,6 +215,33 @@ export const getSetupStatus = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    initialized: users > 0
+    initialized: users > 0,
+  });
+});
+
+export const verifyToken = asyncHandler(async (req, res) => {
+  const { token } = req.cookies;
+
+  if (!token) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  const userFound = await User.findById(decoded.id).select("name email role");
+
+  if (!userFound) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  res.json({
+    id: userFound._id,
+    name: userFound.name,
+    email: userFound.email,
+    role: userFound.role,
   });
 });

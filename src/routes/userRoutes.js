@@ -13,7 +13,7 @@ router.post("/", protect, authorizeRoles("admin"), createUserValidator, validate
 router.get("/", protect, authorizeRoles("admin", "technician"), getAllUsers);
 router.get("/:id", protect, authorizeRoles("admin", "technician"), validateObjectId, getUserById);
 router.put("/:id", protect, authorizeRoles("admin"), updateUserValidator,validateObjectId, validate, updateUser);
-router.delete("/:id", protect, authorizeRoles("admin"), validateObjectId, deleteUser);
+router.put("/deactive/:id", protect, authorizeRoles("admin"), validateObjectId, deleteUser);
 router.put("/restore/:id", protect, authorizeRoles("admin"), restoreUser)
 
 export default router;

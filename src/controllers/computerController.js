@@ -1,15 +1,31 @@
 import Computer from "../models/Computer.js";
+import Laboratory from "../models/Laboratory.js"
 import QRCode from "qrcode";
 import cloudinary from "../config/cloudinary.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 //  Crear una computadora
 export const createComputer = asyncHandler(async (req, res) => {
-  const { lab, processor, ram, storage, graphics } = req.body;
+  const { code, lab, processor, ram, storage, graphics } = req.body;
+
+  const existingComputer = await Computer.findOne({ code });
+      if (existingComputer) {
+        const error = new Error("Code already exists");
+        error.statusCode = 400;
+        throw error;
+      }
+
+  const existingLaboratory = await Laboratory.findById(lab);
+      if (existingComputer) {
+        const error = new Error("Code already exists");
+        error.statusCode = 400;
+        throw error;
+      }
 
   // Crear instancia sin guardar
   const computer = new Computer({
-    lab,
+    code,
+    lab: existingLaboratory._id,
     processor,
     ram,
     storage,

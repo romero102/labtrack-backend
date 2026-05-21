@@ -26,8 +26,11 @@ export const createUserValidator = [
       minLowercase: 1,
       minUppercase: 1,
       minNumbers: 1,
+      minSymbols: 0,
     })
-    .withMessage("Password must contain uppercase, lowercase and number"),
+    .withMessage(
+      "Password must contain uppercase, lowercase and number, min lenght 8",
+    ),
 
   body("role")
     .optional() // porque tu modelo tiene default
@@ -38,9 +41,6 @@ export const createUserValidator = [
     .optional()
     .isArray()
     .withMessage("Labs must be an array")
-    .custom((labs) =>
-      labs.every((lab) => mongoose.Types.ObjectId.isValid(lab))
-      )
+    .custom((labs) => labs.every((lab) => mongoose.Types.ObjectId.isValid(lab)))
     .withMessage("Each lab must be a valid ObjectId"),
-
 ];

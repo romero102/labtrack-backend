@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 //  Create user
 export const createUser = asyncHandler( async (req, res) => {
+  console.log(req.body)
   
     const { name, email, password, role, labs } = req.body;
 
@@ -41,7 +42,7 @@ export const createUser = asyncHandler( async (req, res) => {
 //  Get all users
 export const getAllUsers = asyncHandler( async (req, res) => {
   
-    const users = await User.find({ isActive: true }).populate("labs", "name location");
+    const users = await User.find().populate("labs", "name location");
      res.status(200).json({
       success: true,
       data: users

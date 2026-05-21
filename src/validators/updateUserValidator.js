@@ -16,13 +16,14 @@ export const updateUserValidator = [
     .normalizeEmail(),
 
   body("password")
-    .optional()
+    .optional({ values: "falsy" })
     .trim()
     .isStrongPassword({
       minLength: 8,
       minLowercase: 1,
       minUppercase: 1,
       minNumbers: 1,
+      minSymbols: 0,
     })
     .withMessage("Password must contain uppercase, lowercase and number"),
 

@@ -4,12 +4,7 @@ import mongoose from "mongoose";
 export const createComputerValidator = [
   body("lab")
     .notEmpty()
-    .isArray()
-    .withMessage("Labs must be an array")
-    .custom((labs) =>
-      labs.every((lab) => mongoose.Types.ObjectId.isValid(lab))
-      )
-    .withMessage("Each lab must be a valid ObjectId"),
+    .withMessage("Laboratory is required"),
 
   body("processor")
     .notEmpty()
@@ -24,8 +19,8 @@ export const createComputerValidator = [
   body("storage")
     .notEmpty()
     .withMessage("Storage is required")
-    .matches(/^\d+GB$/)
-    .withMessage("Storage must be in format like 256GB, 512GB"),
+    .matches(/^\d+\s?(GB|TB)\s(HDD|SSD)$/i)
+    .withMessage("Storage must be in format like 256GB SSD, 512GB HDD"),
 
   body("graphics")
     .optional()

@@ -31,7 +31,7 @@ app.use(cookieParser())
 app.use("/api/labs", laboratoryRoutes);
 app.use("/api/computers", computerRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/maintenances", maintenanceRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {

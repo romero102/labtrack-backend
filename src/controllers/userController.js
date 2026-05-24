@@ -4,7 +4,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 //  Create user
 export const createUser = asyncHandler( async (req, res) => {
-  console.log(req.body)
   
     const { name, email, password, role, labs } = req.body;
 

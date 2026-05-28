@@ -1,5 +1,5 @@
 import express from "express";
-import { createMaintenance, getAllMaintenance, getMaintenanceById ,updateMaintenance, deleteMaintenance } from "../controllers/maintenanceController.js";
+import { createMaintenance, getAllMaintenance, getMyMaintenance, getMaintenanceById ,updateMaintenance, deleteMaintenance } from "../controllers/maintenanceController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import { checkMaintenanceOwnership } from "../middleware/maintenanceOwnership.js";
@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post("/", protect, authorizeRoles("admin", "technician"),validate, createMaintenance);
 router.get("/", protect, authorizeRoles("admin", "technician"), getAllMaintenance);
+router.get("/mymaintenance", protect, authorizeRoles("technician"), getMyMaintenance);
 router.get("/:id", protect, authorizeRoles("admin", "technician"), validateObjectId, getMaintenanceById);
 router.put("/:id", protect, authorizeRoles("admin", "technician"), checkMaintenanceOwnership, validateObjectId, validate,updateMaintenance);
 router.delete("/:id", protect, authorizeRoles("admin", "technician"), checkMaintenanceOwnership, validateObjectId, deleteMaintenance);

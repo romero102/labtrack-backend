@@ -1,4 +1,5 @@
 import Laboratory from "../models/Laboratory.js";
+import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Crear un laboratorio
@@ -52,32 +53,58 @@ export const getLaboratoryById = asyncHandler( async (req, res) => {
 
 });
 
-//  Actualizar un laboratorio
-export const updateLaboratory = asyncHandler( async (req, res) => {
-    const lab = await Laboratory.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!lab){
-      const error = new Error("Laboratory not found");
-      error.statusCode = 404;
-      throw error;
-    }
-    res.status(200).json({
-      success: true,
-      data: lab
+export const getMyLaboratories = asyncHandler(async (req, res) => {
+
+  const user = await User.findById(req.user.id)
+    .populate("labs");
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found"
     });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user.labs
+  });
+
+});
+
+//  Actualizar un laboratorio
+export const updateLaboratory = asyncHandler(async (req, res) => {
+  const lab = await Laboratory.findById(req.params.id);
+
+  if (!lab) {
+    const error = new Error("Laboratory not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  Object.assign(lab, req.body);
+
+  await lab.save();
+
+  res.status(200).json({
+    success: true,
+    data: lab,
+  });
 });
 
 //  Eliminar un laboratorio
 export const deleteLaboratory = asyncHandler(async (req, res) => {
-  
-    const lab = await Laboratory.findByIdAndDelete(req.params.id);
-    if (!lab){
-      const error = new Error("Laboratory not found");
-      error.statusCode = 404;
-      throw error;
-    }
-    res.status(200).json({
+  const lab = await Laboratory.findById(req.params.id);
+
+  if (!lab) {
+    const error = new Error("Laboratory not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  await lab.deleteOne();
+
+  res.status(200).json({
     success: true,
-    message: "Laboratory deleted successfully"
-    });
-  
+    message: "Laboratory deleted successfully",
+  });
 });

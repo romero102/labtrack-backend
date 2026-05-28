@@ -55,7 +55,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   //  search user
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate("labs", "name location")
   if (!user) {
     const error = new Error("Invalid credentials");
     error.statusCode = 401;
@@ -96,6 +96,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     id: user._id,
     name: user.name,
     role: user.role,
+    labs: user.labs,
   });
 });
 

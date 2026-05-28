@@ -57,12 +57,33 @@ export const createMaintenance = asyncHandler(async (req, res) => {
 //  Obtener todos los mantenimientos
 export const getAllMaintenance = asyncHandler(async (req, res) => {
   const maintenances = await Maintenance.find()
-    .populate("computer", "code")
+    .populate({
+      path: "computer",
+      select: "code lab processor ram storage graphics",
+      populate: {
+        path: "lab",
+        select: "name",
+      },
+    })
     .populate("technician", "name");
 
   res.status(200).json({
     success: true,
     data: maintenances,
+  });
+});
+
+export const getMyMaintenance = asyncHandler(async (req, res) => {
+  const maintenance = await Maintenance.find({
+    technician: req.user.id,
+  })
+    .populate("computer", "code lab")
+    .populate("technician", "name")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    data: maintenance,
   });
 });
 
@@ -86,17 +107,28 @@ export const getMaintenanceById = asyncHandler(async (req, res) => {
 
 //  Actualizar mantenimiento
 export const updateMaintenance = asyncHandler(async (req, res) => {
-  const maintenance = await Maintenance.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true, runValidators: true },
-  );
+  const maintenance = await Maintenance.findById(req.params.id);
 
   if (!maintenance) {
     const error = new Error("Maintenance not found");
     error.statusCode = 404;
     throw error;
   }
+
+  // autorización
+  if (
+    req.user.role !== "admin" &&
+    maintenance.technician.toString() !== req.user.id
+  ) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  // actualizar después de autorizar
+  Object.assign(maintenance, req.body);
+
+  await maintenance.save();
 
   res.status(200).json({
     success: true,
@@ -106,13 +138,25 @@ export const updateMaintenance = asyncHandler(async (req, res) => {
 
 //  Eliminar mantenimiento
 export const deleteMaintenance = asyncHandler(async (req, res) => {
-  const maintenance = await Maintenance.findByIdAndDelete(req.params.id);
+  const maintenance = await Maintenance.findById(req.params.id);
 
   if (!maintenance) {
     const error = new Error("Maintenance not found");
     error.statusCode = 404;
     throw error;
   }
+
+  // autorización
+  if (
+    req.user.role !== "admin" &&
+    maintenance.technician.toString() !== req.user.id
+  ) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  await maintenance.deleteOne();
 
   res.status(200).json({
     success: true,

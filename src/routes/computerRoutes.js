@@ -1,5 +1,5 @@
 import express from "express";
-import { createComputer, getAllComputers, getComputerById, updateComputer, deleteComputer } from "../controllers/computerController.js";
+import { createComputer, getAllComputers, getComputerById, getComputersByLab, updateComputer, deleteComputer } from "../controllers/computerController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import { createComputerValidator } from "../validators/createComputerValidator.js";
@@ -12,7 +12,8 @@ const router = express.Router();
 // Rutas de CRUD
 router.post("/", protect, authorizeRoles("admin"), createComputerValidator, validate, createComputer);         
 router.get("/", protect, authorizeRoles("admin", "technician"), getAllComputers);        
-router.get("/:id", protect, authorizeRoles("admin", "technician"), validateObjectId, getComputerById);     
+router.get("/:id", protect, authorizeRoles("admin", "technician"), validateObjectId, getComputerById);
+router.get("/lab/:id", protect, authorizeRoles("admin", "technician"), validateObjectId, getComputersByLab);     
 router.put("/:id", protect, authorizeRoles("admin"), updateComputerValidator, validateObjectId, validate, updateComputer);     
 router.delete("/:id", protect, authorizeRoles("admin"), validateObjectId, deleteComputer);  
 

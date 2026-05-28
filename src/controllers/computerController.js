@@ -32,7 +32,7 @@ export const createComputer = asyncHandler(async (req, res) => {
     graphics
   });
 
-  const qrData = `${process.env.FRONTEND_URL}/computers/${computer._id}`;
+  const qrData = `${process.env.FRONTEND_URL}/maintenance${computer._id}`;
 
   let uploadResponse; // la declaramos fuera para poder usarla en catch
 
@@ -70,7 +70,7 @@ export const createComputer = asyncHandler(async (req, res) => {
 
 //  Obtener todas las computadoras
 export const getAllComputers = asyncHandler( async (req, res) => {
-  const computers = await Computer.find().populate("lab").lean();
+  const computers = await Computer.find().populate("lab", "name").lean();
 
   res.status(200).json({
     success: true,
@@ -90,6 +90,19 @@ export const getComputerById = asyncHandler(async (req, res) => {
     success: true,
     data: computer
     });
+});
+
+// Obtener computadoras por laboratorio
+export const getComputersByLab = asyncHandler(async (req, res) => {
+
+  const computers = await Computer.find({
+    lab: req.params.id,
+  }).populate("lab", "name");
+
+  res.status(200).json({
+    success: true,
+    data: computers,
+  });
 });
 
 //  Actualizar una computadora

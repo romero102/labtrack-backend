@@ -32,7 +32,7 @@ export const createComputer = asyncHandler(async (req, res) => {
     graphics
   });
 
-  const qrData = `${process.env.FRONTEND_URL}/maintenance${computer._id}`;
+  const qrData = `${process.env.FRONTEND_URL}/maintenance/${computer._id}`;
 
   let uploadResponse; // la declaramos fuera para poder usarla en catch
 

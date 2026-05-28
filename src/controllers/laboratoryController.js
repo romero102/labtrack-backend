@@ -1,74 +1,65 @@
 import Laboratory from "../models/Laboratory.js";
-import User from "../models/User.js"
+import User from "../models/User.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Crear un laboratorio
-export const createLaboratory = asyncHandler( async (req, res) => {
-  
-    const { name, location, computerCount } = req.body;
+export const createLaboratory = asyncHandler(async (req, res) => {
+  const { name, location, computerCount } = req.body;
 
-    const existingLab = await Laboratory.findOne({ name });
+  const existingLab = await Laboratory.findOne({ name });
 
-    if (existingLab) {
-      const error = new Error("Laboratory already exists");
-      error.statusCode = 400;
-      throw error;
-    }
+  if (existingLab) {
+    const error = new Error("Laboratory already exists");
+    error.statusCode = 400;
+    throw error;
+  }
 
-    const lab = new Laboratory({ name, location, computerCount });
-    await lab.save();
+  const lab = new Laboratory({ name, location, computerCount });
+  await lab.save();
 
-    res.status(201).json({
-      success: true,
-      data: lab
-    });
-  
+  res.status(201).json({
+    success: true,
+    data: lab,
+  });
 });
 
 //  Obtener todos los laboratorios
-export const getAllLaboratories = asyncHandler( async (req, res) => {
+export const getAllLaboratories = asyncHandler(async (req, res) => {
+  const labs = await Laboratory.find();
 
-    const labs = await Laboratory.find();
-
-    res.status(200).json({
-      success: true,
-      data: labs
-    });
-  
+  res.status(200).json({
+    success: true,
+    data: labs,
+  });
 });
 
 //  Obtener un laboratorio por ID
-export const getLaboratoryById = asyncHandler( async (req, res) => {
-  
-    const lab = await Laboratory.findById(req.params.id);
-    if (!lab){
-      const error = new Error("Laboratory not found");
-      error.statusCode = 404;
-      throw error;
-    }
-    res.status(200).json({
-      success: true,
-      data: lab
-    });
-
+export const getLaboratoryById = asyncHandler(async (req, res) => {
+  const lab = await Laboratory.findById(req.params.id);
+  if (!lab) {
+    const error = new Error("Laboratory not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  res.status(200).json({
+    success: true,
+    data: lab,
+  });
 });
 
 export const getMyLaboratories = asyncHandler(async (req, res) => {
-
-  const user = await User.findById(req.user.id)
-    .populate("labs");
+  const user = await User.findById(req.user.id).populate("labs");
 
   if (!user) {
     return res.status(404).json({
-      message: "User not found"
+      message: "User not found",
     });
   }
 
   res.status(200).json({
     success: true,
-    data: user.labs
+    data: user.labs,
   });
-
 });
 
 //  Actualizar un laboratorio
@@ -93,8 +84,6 @@ export const updateLaboratory = asyncHandler(async (req, res) => {
 
 //  Eliminar un laboratorio
 export const deleteLaboratory = asyncHandler(async (req, res) => {
-
-
   const lab = await Laboratory.findById(req.params.id);
 
   if (!lab) {
@@ -106,14 +95,11 @@ export const deleteLaboratory = asyncHandler(async (req, res) => {
   await lab.deleteOne();
 
   // limpiar referencias SOLO si sí se eliminó
-  await Computer.updateMany(
-    { lab: req.params.id },
-    { $unset: { lab: "" } }
-  );
+  await Computer.updateMany({ lab: req.params.id }, { $unset: { lab: "" } });
 
   await User.updateMany(
     { labs: req.params.id },
-    { $pull: { labs: req.params.id } }
+    { $pull: { labs: req.params.id } },
   );
 
   res.status(200).json({

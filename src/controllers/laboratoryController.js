@@ -93,6 +93,8 @@ export const updateLaboratory = asyncHandler(async (req, res) => {
 
 //  Eliminar un laboratorio
 export const deleteLaboratory = asyncHandler(async (req, res) => {
+
+
   const lab = await Laboratory.findById(req.params.id);
 
   if (!lab) {
@@ -102,6 +104,17 @@ export const deleteLaboratory = asyncHandler(async (req, res) => {
   }
 
   await lab.deleteOne();
+
+  // limpiar referencias SOLO si sí se eliminó
+  await Computer.updateMany(
+    { lab: req.params.id },
+    { $unset: { lab: "" } }
+  );
+
+  await User.updateMany(
+    { labs: req.params.id },
+    { $pull: { labs: req.params.id } }
+  );
 
   res.status(200).json({
     success: true,

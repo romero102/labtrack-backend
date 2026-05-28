@@ -55,7 +55,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   //  search user
-  const user = await User.findOne({ email }).populate("labs", "name location")
+  const user = await User.findOne({ email }).populate("labs", "name location");
   if (!user) {
     const error = new Error("Invalid credentials");
     error.statusCode = 401;
@@ -125,7 +125,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    const error = new Error("User not found");
+    const error = new Error("If the email exists, a recovery email was sent");
     error.statusCode = 404;
     throw error;
   }
@@ -156,8 +156,60 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   await transporter.sendMail({
     to: user.email,
-    subject: "Password Reset",
-    text: `Reset your password here: ${resetUrl}`,
+    subject: "Password Reset Request",
+    html: `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <h2>Password Reset</h2>
+
+      <p>
+        We received a request to reset your password for the university system.
+      </p>
+
+      <p>
+        Click the button below to create a new password:
+      </p>
+
+      <a
+        href="${resetUrl}"
+        style="
+          display: inline-block;
+          padding: 12px 20px;
+          background-color: #2563eb;
+          color: white;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: bold;
+        "
+      >
+        Reset Password
+      </a>
+
+      <p style="margin-top: 20px;">
+        Or copy and paste this link into your browser:
+      </p>
+
+      <p>
+        <a href="${resetUrl}">
+          ${resetUrl}
+        </a>
+      </p>
+
+      <hr />
+
+      <p style="color: #555;">
+        If you did not request a password reset, you can safely ignore this email.
+        Your password will remain unchanged.
+      </p>
+
+      <p style="color: #555;">
+        This link will expire in 15 minutes.
+      </p>
+
+      <p>
+        University Support System
+      </p>
+    </div>
+  `,
   });
 
   res.status(200).json({

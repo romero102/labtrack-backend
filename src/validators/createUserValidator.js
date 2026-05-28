@@ -38,9 +38,7 @@ export const createUserValidator = [
     .withMessage("Role must be either admin or technician"),
 
   body("labs")
-    .optional()
-    .isArray()
-    .withMessage("Labs must be an array")
-    .custom((labs) => labs.every((lab) => mongoose.Types.ObjectId.isValid(lab)))
-    .withMessage("Each lab must be a valid ObjectId"),
+  .optional()
+  .isArray()
+  .withMessage("Labs must be an array"),
 ];

@@ -42,11 +42,27 @@ export const setupAdmin = asyncHandler(async (req, res) => {
   const adminObj = admin.toObject();
   delete adminObj.password;
 
-  res.status(201).json({
-    success: true,
-    data: adminObj,
-    message: "Admin created successfully",
-  });
+  const token = jwt.sign(
+  { id: admin._id, role: admin.role },
+  process.env.JWT_SECRET,
+  { expiresIn: "1d" }
+);
+
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+});
+
+res.status(201).json({
+  success: true,
+  data: {
+    id: admin._id,
+    name: admin.name,
+    role: admin.role,
+  },
+  message: "Admin created successfully",
+});
 });
 
 //  login user

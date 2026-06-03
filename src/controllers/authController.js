@@ -43,26 +43,26 @@ export const setupAdmin = asyncHandler(async (req, res) => {
   delete adminObj.password;
 
   const token = jwt.sign(
-  { id: admin._id, role: admin.role },
-  process.env.JWT_SECRET,
-  { expiresIn: "1d" }
-);
+    { id: admin._id, role: admin.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" },
+  );
 
-res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-});
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
 
-res.status(201).json({
-  success: true,
-  data: {
-    id: admin._id,
-    name: admin.name,
-    role: admin.role,
-  },
-  message: "Admin created successfully",
-});
+  res.status(201).json({
+    success: true,
+    data: {
+      id: admin._id,
+      name: admin.name,
+      role: admin.role,
+    },
+    message: "Admin created successfully",
+  });
 });
 
 //  login user
@@ -163,12 +163,18 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
+
+  await transporter.verify();
+
+  console.log("SMTP Ready");
 
   await transporter.sendMail({
     to: user.email,

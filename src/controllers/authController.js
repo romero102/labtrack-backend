@@ -162,22 +162,12 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-  try {
-  const result = await sendPasswordResetEmail(
-    user.email,
-    resetUrl
-  );
-
-  console.log(result);
+  await sendPasswordResetEmail(user.email, resetUrl);
 
   res.status(200).json({
     success: true,
     message: "Password reset email sent",
   });
-} catch (error) {
-  console.error("RESEND ERROR:", error);
-  throw error;
-}
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {

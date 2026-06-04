@@ -1,30 +1,5 @@
 import { Resend } from "resend";
 
-console.log(
-  "RESEND_API_KEY:",
-  process.env.RESEND_API_KEY ? "Exists" : "Missing"
-);
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export const sendPasswordResetEmail = async (
-  email,
-  resetUrl
-) => {
-  const response = await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: email,
-    subject: "Password Reset Request",
-    html: `...`,
-  });
-
-  console.log("RESEND RESPONSE:", response);
-
-  return response;
-};
-
-/*import { Resend } from "resend";
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendPasswordResetEmail = async (
@@ -73,4 +48,4 @@ export const sendPasswordResetEmail = async (
       </div>
     `,
   });
-};*/
+};

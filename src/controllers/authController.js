@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import dotenv from "dotenv";
 import { error } from "console";
+import { sendPasswordResetEmail } from "../services/emailService.js";
 
 // Create firts user
 
@@ -162,77 +163,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  await transporter.verify();
-
-  console.log("SMTP Ready");
-
-  await transporter.sendMail({
-    to: user.email,
-    subject: "Password Reset Request",
-    html: `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-      <h2>Password Reset</h2>
-
-      <p>
-        We received a request to reset your password for the university system.
-      </p>
-
-      <p>
-        Click the button below to create a new password:
-      </p>
-
-      <a
-        href="${resetUrl}"
-        style="
-          display: inline-block;
-          padding: 12px 20px;
-          background-color: #2563eb;
-          color: white;
-          text-decoration: none;
-          border-radius: 6px;
-          font-weight: bold;
-        "
-      >
-        Reset Password
-      </a>
-
-      <p style="margin-top: 20px;">
-        Or copy and paste this link into your browser:
-      </p>
-
-      <p>
-        <a href="${resetUrl}">
-          ${resetUrl}
-        </a>
-      </p>
-
-      <hr />
-
-      <p style="color: #555;">
-        If you did not request a password reset, you can safely ignore this email.
-        Your password will remain unchanged.
-      </p>
-
-      <p style="color: #555;">
-        This link will expire in 15 minutes.
-      </p>
-
-      <p>
-        University Support System
-      </p>
-    </div>
-  `,
-  });
+  await sendPasswordResetEmail(user.email, resetUrl);
 
   res.status(200).json({
     success: true,

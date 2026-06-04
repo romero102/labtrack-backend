@@ -228,9 +228,10 @@ export const verifyToken = asyncHandler(async (req, res) => {
   const { token } = req.cookies;
 
   if (!token) {
-    const error = new Error("Unauthorized");
-    error.statusCode = 401;
-    throw error;
+    return res.status(401).json({
+    success: false,
+    message: "Unauthorized",
+  });
   }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -238,9 +239,10 @@ export const verifyToken = asyncHandler(async (req, res) => {
   const userFound = await User.findById(decoded.id).select("name email role");
 
   if (!userFound) {
-    const error = new Error("Unauthorized");
-    error.statusCode = 401;
-    throw error;
+    return res.status(401).json({
+    success: false,
+    message: "Unauthorized",
+  });
   }
 
   res.json({

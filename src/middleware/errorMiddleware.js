@@ -1,6 +1,5 @@
 export const errorHandler = (err, req, res, next) => {
-  console.error("🔥 Error:", err);
-
+  
   let statusCode = err.statusCode || 500;
   let message = err.message || "Internal Server Error";
 
@@ -16,8 +15,14 @@ export const errorHandler = (err, req, res, next) => {
     message = "Duplicate field value";
   }
 
+  if (statusCode >= 500) {
+    console.error("🔥 Server Error:", err);
+  } else {
+    console.warn(`⚠️ ${statusCode} ${message}`);
+  }
+
   res.status(statusCode).json({
     success: false,
-    message
+    message,
   });
 };

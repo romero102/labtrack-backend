@@ -1,6 +1,7 @@
 import Laboratory from "../models/Laboratory.js";
 import User from "../models/User.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import Computer from "../models/Computer.js";
 
 // Crear un laboratorio
 export const createLaboratory = asyncHandler(async (req, res) => {
@@ -94,8 +95,9 @@ export const deleteLaboratory = asyncHandler(async (req, res) => {
 
   await lab.deleteOne();
 
-  // limpiar referencias SOLO si sí se eliminó
-  await Computer.updateMany({ lab: req.params.id }, { $unset: { lab: "" } });
+  await Computer.deleteMany({
+    lab: req.params.id,
+  });
 
   await User.updateMany(
     { labs: req.params.id },

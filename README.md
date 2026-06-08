@@ -138,11 +138,10 @@ MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_app_password
 CLOUDINARY_KEY=your_cloudinary_key
 CLOUDINARY_NAME=your_cloudinary_name
 CLOUDINARY_SECRET=your_cloudinary_secret
+RESEND_API_KEY=Your Resend API key for sending password recovery emails
 PORT=5000
 ```
 
